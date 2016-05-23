@@ -1,30 +1,22 @@
-var errors  = require('../errors'),
-    config  = require('../config'),
-    storage = {};
+var errors = require('../errors'),
+    storage;
 
-function getStorage(storageChoice) {
-    var storagePath,
-        storageConfig;
+function getStorage() {
+    var storageChoice = 'cloudant';
+    var StorageConstructor;
 
-    storageChoice = config.storage.active;
-    storagePath = config.paths.storage;
-    storageConfig = config.storage[storageChoice];
-
-    if (storage[storageChoice]) {
-        return storage[storageChoice];
+    if (storage) {
+        return storage;
     }
 
     try {
-        // TODO: determine if storage has all the necessary methods.
-        storage[storageChoice] = require(storagePath);
+        // TODO: determine if storage has all the necessary methods
+        StorageConstructor = require('./' + storageChoice);
     } catch (e) {
         errors.logError(e);
     }
-
-    // Instantiate and cache the storage module instance.
-    storage[storageChoice] = new storage[storageChoice](storageConfig);
-
-    return storage[storageChoice];
+    storage = new StorageConstructor();
+    return storage;
 }
 
 module.exports.getStorage = getStorage;
